@@ -13,6 +13,7 @@ import time
 import psutil
 import requests
 import click
+from helper import logger
 
 
 def get_server_performance():
@@ -30,7 +31,8 @@ def get_server_performance():
 
 def upload_to_central_server(api_url, api_key, data):
     # 上传数据到中央服务器
-    response = requests.post(api_url, json=data)
+    response = requests.post(api_url, json=data,
+                             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api_key})
     return response.status_code
 
 
@@ -46,12 +48,13 @@ def main(api_url, api_key, interval):
         server_performance_data = get_server_performance()
         status_code = upload_to_central_server(api_url, api_key, server_performance_data)
         if status_code == 200:
-            logging.info(f'Epoch {epoch_num}, {datetime.datetime.now()},  {status_code}')
+            logging.info(f'Epoch {epoch_num}, {status_code}')
         else:
-            logging.error(f'Epoch {epoch_num}, {datetime.datetime.now()},  {status_code}')
+            logging.error(f'Epoch {epoch_num}, {status_code}')
         # 间隔一段时间再次获取性能参数
         time.sleep(interval)  # 间隔5分钟
 
 
 if __name__ == "__main__":
+    logger.init("Surveillancer")
     main()
